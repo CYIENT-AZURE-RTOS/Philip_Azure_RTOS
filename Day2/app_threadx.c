@@ -30,8 +30,8 @@
 /* USER CODE BEGIN PTD */
 TX_THREAD ThreadOne;
 TX_THREAD ThreadTwo;
-TX_MUTEX MutexOne;
-TX_MUTEX MutexTwo;
+TX_SEMAPHORE Semaphore1;
+TX_SEMAPHORE Semaphore2;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -91,8 +91,9 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
     {
       ret = TX_THREAD_ERROR;
     }
-//    create mutex one
-   if(tx_mutex_create(&MutexOne, "Mutex 1", TX_NO_INHERIT) != TX_SUCCESS)
+//    create semaphore one
+
+   if( tx_semaphore_create(&Semaphore1, "Semaphore1", 1) != TX_SUCCESS)
    {
 	   ret = TX_THREAD_ERROR;
    }
@@ -112,11 +113,12 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
     {
       ret = TX_THREAD_ERROR;
     }
-    //    create mutex two
-       if(tx_mutex_create(&MutexTwo, "Mutex 2", TX_NO_INHERIT) != TX_SUCCESS)
-       {
-    	   ret = TX_THREAD_ERROR;
-       }
+
+    //    create semaphore two
+    if( tx_semaphore_create(&Semaphore2, "Semaphore2", 1) != TX_SUCCESS)
+    {
+ 	   ret = TX_THREAD_ERROR;
+    }
 
   /* USER CODE END App_ThreadX_Init */
 
@@ -154,12 +156,12 @@ void ThreadOne_Entry(ULONG thread_input)
   while(1)									/* Infinite loop */
   {
 //	HAL_GPIO_TogglePin(RED_LED_GPIO_Port, RED_LED_Pin);	/* Toggle Green LED */
-	status = tx_mutex_get(&MutexOne, 1000);
+	status = tx_semaphore_get(&Semaphore1, TX_WAIT_FOREVER);
 	if(TX_SUCCESS == status)
 	{
 	HAL_UART_Transmit(&huart1, str1, strlen(str1), 100);
 	}
-	tx_mutex_put(&MutexOne);
+	tx_semaphore_put(&Semaphore1);
 	//App_Delay(100);							/* Delay for 100=1000ms */
 	/*t1_count++;
 
@@ -182,13 +184,13 @@ void ThreadTwo_Entry(ULONG thread_input)
   uint8_t status;
   while(1)									/* Infinite loop */
   {
-	 status =  tx_mutex_get(&MutexTwo, 1000);
+	 status =  tx_semaphore_get(&Semaphore2, TX_WAIT_FOREVER );
 	 if(TX_SUCCESS == status)
 	 {
 //	HAL_GPIO_TogglePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin);	/* Toggle Green LED */
 	HAL_UART_Transmit(&huart1, str2, strlen(str2), 100);
 	 }
-	tx_mutex_put(&MutexTwo);
+	tx_semaphore_put(&Semaphore2);
 	//App_Delay(200);							/* Delay for 100=1000ms */
 	/*t2_count++;
 
